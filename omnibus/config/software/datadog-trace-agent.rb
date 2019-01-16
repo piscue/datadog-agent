@@ -8,25 +8,17 @@ require 'pathname'
 
 name "datadog-trace-agent"
 
-dependency "datadog-agent"
-
 trace_agent_version = ENV['TRACE_AGENT_VERSION']
 if trace_agent_version.nil? || trace_agent_version.empty?
   trace_agent_version = 'master'
 end
+
 default_version trace_agent_version
 
-source git: 'https://github.com/DataDog/datadog-trace-agent.git'
-relative_path 'src/github.com/DataDog/datadog-trace-agent'
-
-if windows?
-  trace_agent_binary = "trace-agent.exe"
-else
-  trace_agent_binary = "trace-agent"
-end
+source path: '..'
+relative_path 'src/github.com/DataDog/datadog-agent'
 
 build do
-  ship_license "https://raw.githubusercontent.com/DataDog/datadog-trace-agent/#{version}/LICENSE"
   # set GOPATH on the omnibus source dir for this software
   gopath = Pathname.new(project_dir) + '../../../..'
   if windows?
@@ -48,22 +40,12 @@ build do
   end
 
   block do
-    # defer compilation step in a block to allow getting the project's build version, which is populated
-    # only once the software that the project takes its version from (i.e. `datadog-agent`) has finished building
-    env['TRACE_AGENT_VERSION'] = project.build_version.gsub(/[^0-9\.]/, '') # used by gorake.rb in the trace-agent, only keep digits and dots
+    command "invoke trace-agent.build", :env => env
 
-    # build trace-agent
     if windows?
-      command "make windows", :env => env
-    end
-    command "make install", :env => env
-
-    # copy binary
-    if windows?
-      #copy "#{gopath.to_path}/bin/#{trace_agent_binary}", "#{install_dir}/bin/agent"
-      copy "#{gopath.to_path}/bin/#{trace_agent_binary}", "#{Omnibus::Config.source_dir()}/datadog-agent/src/github.com/DataDog/datadog-agent/bin/agent"
+      copy 'bin/trace-agent.exe', "#{Omnibus::Config.source_dir()}/datadog-agent/src/github.com/DataDog/datadog-agent/bin/agent"
     else
-      copy "#{gopath.to_path}/bin/#{trace_agent_binary}", "#{install_dir}/embedded/bin"
+      copy 'bin/trace-agent', '#{install_dir}/embedded/bin'
     end
   end
 end
