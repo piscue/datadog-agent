@@ -5,10 +5,9 @@ import shutil
 import invoke
 from invoke import task
 
-from .build_tags import get_build_tags, get_default_build_tags
-from .utils import get_build_flags, bin_name
+from .utils import bin_name, get_build_flags, get_version_numeric_only, load_release_versions
 from .utils import REPO_PATH
-
+from .build_tags import get_build_tags, get_default_build_tags, LINUX_ONLY_TAGS, REDHAT_AND_DEBIAN_ONLY_TAGS, REDHAT_AND_DEBIAN_DIST
 from .go import deps
 
 BIN_PATH = os.path.join(".", "bin", "trace-agent")
