@@ -8,6 +8,8 @@ require 'pathname'
 
 name "datadog-trace-agent"
 
+dependency "datadog-agent"
+
 trace_agent_version = ENV['TRACE_AGENT_VERSION']
 if trace_agent_version.nil? || trace_agent_version.empty?
   trace_agent_version = 'master'
